@@ -263,6 +263,40 @@
 			}
 
 			var self = this;
+			//preprocess frames
+			var c = [ ];
+			_.each(signals, function(s, i) {
+				//enum each frame add margins to s.actor[0] and s.actor[1]
+				if (s.type == "Frame") {
+					var a,b;
+					if (s.frametype == "top"){
+						//upper
+						a=s.actor[0];
+						a.layercount++;
+						if (a.maxlayer_l < a.layercount){
+							a.maxlayer_l = a.layercount;
+						}
+						b=s.actor[1];
+						b.layercount++;
+						if (b.maxlayer_r < b.layercount){
+							b.maxlayer_r = b.layercount;
+						}
+						s.margin_left = a.layercount * ACTOR_PADDING;
+						s.padding_right = a.layercount * ACTOR_PADDING;
+						c.push(i);
+					} else if (s.frametype == "bottom"){
+						//lower
+						var x = c.pop();
+						signals[x].actor[0].layercount--;
+						signals[x].actor[1].layercount--;
+						signals[x].bottom = i;
+						s.top = x;
+						//temporary measure
+						s.prev = x;
+					}
+				}
+			});
+
 			_.each(actors, function(a) {
 				var bb = paper.text_bbox(a.name, font);
 				a.text_bb = bb;
@@ -294,7 +328,7 @@
 				}
 			}
 
-			_.each(signals, function(s) {
+			_.each(signals, function(s, i) {
 				var a, b; // Indexes of the left and right actors involved
 
 				var bb = paper.text_bbox(s.message, font);
@@ -310,7 +344,11 @@
 
 					s.width  += (SIGNAL_MARGIN + SIGNAL_PADDING) * 2;
 					s.height += (SIGNAL_MARGIN + SIGNAL_PADDING) * 2;
-
+					//"create" message
+					if (s.isnew){
+						s.actorB.navel = i;
+						s.actorA.distances.push(s.actorB.width/2);
+					}
 					if (s.isSelf()) {
 						a = s.actorA.index;
 						b = a + 1;
@@ -320,6 +358,30 @@
 						b = Math.max(s.actorA.index, s.actorB.index);
 					}
 
+				} else if (s.type == "Frame") {
+					s.width  += (NOTE_MARGIN + NOTE_PADDING) * 2;
+					s.height += (NOTE_MARGIN + NOTE_PADDING) * 2;
+
+					// HACK lets include the actor's padding
+					extra_width = 2 * ACTOR_MARGIN;
+
+					if (s.frametype == "top"){
+						// Over multiple actors
+						a = Math.min(s.actor[0].index, s.actor[1].index);
+						b = Math.max(s.actor[0].index, s.actor[1].index);
+						s.height -= NOTE_MARGIN;
+					} else {
+						// bottom height
+						s.height = bb.height / 2;
+						// Over single actor
+						var edgeactors = signals[s.top].actor;
+						a = Math.min(edgeactors[0].index, edgeactors[1].index);
+						b = Math.max(edgeactors[0].index, edgeactors[1].index);
+					}
+					self._signals_height += s.height;
+					// We don't need our padding, and we want to overlap
+					extra_width = - (NOTE_PADDING * 2 + NOTE_OVERLAP * 2);
+				
 				} else if (s.type == "Note") {
 					s.width  += (NOTE_MARGIN + NOTE_PADDING) * 2;
 					s.height += (NOTE_MARGIN + NOTE_PADDING) * 2;
@@ -347,7 +409,6 @@
 						actor_ensure_distance(a - 1, a, s.width / 2);
 						actor_ensure_distance(a, a + 1, s.width / 2);
 						self._signals_height += s.height;
-
 						return; // Bail out early
 					}
 				} else {
@@ -355,13 +416,15 @@
 				}
 
 				actor_ensure_distance(a, b, s.width + extra_width);
-				self._signals_height += s.height;
+				self._signals_height += s.isnew ? self._actors_height:s.height;
 			});
 
 			// Re-jig the positions
 			var actors_x = 0;
 			_.each(actors, function(a) {
 				a.x = Math.max(actors_x, a.x);
+				//add indent for frame
+				a.x += a.maxlayer_l * ACTOR_PADDING;
 
 				// TODO This only works if we loop in sequence, 0, 1, 2, etc
 				_.each(a.distances, function(distance, b) {
@@ -372,6 +435,8 @@
 
 					b = actors[b];
 					distance = Math.max(distance, a.width / 2, b.width / 2);
+					//add distance for frame
+					distance += a.maxlayer_r * ACTOR_PADDING;
 					b.x = Math.max(b.x, a.x + a.width/2 + distance - b.width/2);
 				});
 
@@ -397,25 +462,30 @@
 			var y = offsetY;
 			var self = this;
 			_.each(this.diagram.actors, function(a) {
+				if (a.navel > -1){
+					return;
+				}
 				// Top box
-				self.draw_actor(a, y, self._actors_height);
+				self.draw_actor(a, y, self._actors_height, self._signals_height);
 
+				//removed bottom box
 				// Bottom box
-				self.draw_actor(a, y + self._actors_height + self._signals_height, self._actors_height);
-
-				// Veritical line
-				var aX = getCenterX(a);
-				var line = self.draw_line(
-					aX, y + self._actors_height - ACTOR_MARGIN,
-					aX, y + self._actors_height + ACTOR_MARGIN + self._signals_height);
-				line.attr(LINE);
+				//self.draw_actor(a, y + self._actors_height + self._signals_height, self._actors_height);
+				//moved drawing Vertical line
 			});
 		},
 
-		draw_actor : function (actor, offsetY, height) {
+		draw_actor : function (actor, offsetY, height, h_signals) {
 			actor.y      = offsetY;
 			actor.height = height;
 			this.draw_text_box(actor, actor.name, ACTOR_MARGIN, ACTOR_PADDING, this._font);
+
+			// Veritical line   moved here
+			var aX = getCenterX(actor);
+			var line = this.draw_line(
+				aX, offsetY + height - ACTOR_MARGIN,
+				aX, offsetY + height + ACTOR_MARGIN + h_signals);
+			line.attr(LINE);
 		},
 
 		draw_signals : function (offsetY) {
@@ -431,9 +501,11 @@
 
 				} else if (s.type == "Note") {
 					self.draw_note(s, y);
+				} else if (s.type == "Frame") {
+					self.draw_frame(s, y);
 				}
 
-				y += s.height;
+				y += s.isnew ? self._actors_height:s.height;
 			});
 		},
 
@@ -471,6 +543,11 @@
 		draw_signal : function (signal, offsetY) {
 			var aX = getCenterX( signal.actorA );
 			var bX = getCenterX( signal.actorB );
+			if (signal.isnew){
+				//draw created actor here
+				this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - this._actors_height);
+				bX = signal.actorB.x + ACTOR_MARGIN;
+			}
 
 			// Mid point between actors
 			var x = (bX - aX) / 2 + aX;
@@ -491,6 +568,34 @@
 			//var ARROW_SIZE = 16;
 			//var dir = this.actorA.x < this.actorB.x ? 1 : -1;
 			//draw_arrowhead(bX, offsetY, ARROW_SIZE, dir);
+		},
+
+		draw_frame : function (frame, offsetY){
+			if (frame.frametype == "top"){
+				frame.y = offsetY;
+				return;
+			}
+			var top = this.diagram.signals[frame.top];
+			var y = top.y + ACTOR_PADDING + ACTOR_MARGIN;
+			var actor_l = top.actor[0];
+			var actor_r = top.actor[1];
+			var padding_l = actor_l.maxlayer_l * ACTOR_PADDING;
+			var x = actor_l.x - padding_l + frame.margin_left;
+			var w = actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
+			var h = offsetY - y;
+			
+			var rect = this.draw_rect(x, y, w, h);
+			rect.attr(LINE);
+			this.draw_text(x, y, top.message ,this._font);
+			
+			var prev = this.diagram.signals[frame.prev];
+			var aX = getCenterX( actor_l );
+			var bX = getCenterX( actor_r );
+
+			// Mid point between actors
+			x = (bX - aX) / 2 + aX;
+			y = prev.y + ACTOR_PADDING * 3;
+			this.draw_text(x, y, frame.message, this._font); 
 		},
 
 		draw_note : function (note, offsetY) {

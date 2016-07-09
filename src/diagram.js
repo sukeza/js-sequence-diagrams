@@ -57,19 +57,36 @@
 		this.alias = alias;
 		this.name  = name;
 		this.index = index;
+		this.layercount = 0;
+		this.maxlayer_l = 0;
+		this.maxlayer_r = 0;
+		this.navel = -1;
 	};
 
-	Diagram.Signal = function(actorA, signaltype, actorB, message) {
+	Diagram.Signal = function(actorA, signaltype, actorB, message, isnew) {
 		this.type       = "Signal";
 		this.actorA     = actorA;
 		this.actorB     = actorB;
 		this.linetype   = signaltype & 3;
 		this.arrowtype  = (signaltype >> 2) & 3;
 		this.message    = message;
+		this.isnew      = isnew;
 	};
 
 	Diagram.Signal.prototype.isSelf = function() {
 		return this.actorA.index == this.actorB.index;
+	};
+
+	Diagram.Frame = function(actor, frametype, message) {
+		this.type      = "Frame";
+		this.frametype = frametype;
+		this.actor     = actor;
+		this.message   = message;
+		this.margin_left = 0;
+		this.padding_right = 0;
+		this.bottom = 0;
+		this.top = 0;
+		this.y = 0;
 	};
 
 	Diagram.Note = function(actor, placement, message) {

@@ -17,11 +17,15 @@
 \s+               /* skip whitespace */
 \#[^\r\n]*        /* skip comments */
 "participant"     return 'participant';
+"@"               return 'participant';
 "left of"         return 'left_of';
 "right of"        return 'right_of';
 "over"            return 'over';
 "note"            return 'note';
+"frame"           return 'frame';
+"bottom"          return 'bottom';
 "title"           return 'title';
+"["               return 'create';
 ","               return ',';
 [^\->:,\r\n"]+    return 'ACTOR';
 \"[^"]+\"         return 'ACTOR';
@@ -32,6 +36,7 @@
 :[^\r\n]+         return 'MESSAGE';
 <<EOF>>           return 'EOF';
 .                 return 'INVALID';
+
 
 /lex
 
@@ -55,9 +60,15 @@ line
 
 statement
 	: 'participant' actor_alias { $2; }
+	| frame_statement      { yy.parser.yy.addSignal($1); }
 	| signal               { yy.parser.yy.addSignal($1); }
 	| note_statement       { yy.parser.yy.addSignal($1); }
 	| 'title' message      { yy.parser.yy.setTitle($2);  }
+	;
+
+frame_statement
+	: 'frame' 'over' actor_pair message { $$ = new Diagram.Frame($3, "top", $4); }
+	| 'frame' 'bottom' message { $$ = new Diagram.Frame([null,null], "bottom", $3); }
 	;
 
 note_statement
@@ -77,7 +88,9 @@ placement
 
 signal
 	: actor signaltype actor message
-	{ $$ = new Diagram.Signal($1, $2, $3, $4); }
+	{ $$ = new Diagram.Signal($1, $2, $3, $4, false); }
+	| actor signaltype create actor message
+	{ $$ = new Diagram.Signal($1, $2, $4, $5, true); }
 	;
 
 actor
