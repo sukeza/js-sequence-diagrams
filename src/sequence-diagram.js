@@ -220,7 +220,6 @@
 			this.init_font();
 
 			this.layout();
-
 			var title_height = this._title ? this._title.height : 0;
 
 			this._paper.setStart();
@@ -313,7 +312,6 @@
 
 			function actor_ensure_distance(a, b, d) {
 				assert(a < b, "a must be less than or equal to b");
-
 				if (a < 0) {
 					// Ensure b has left margin
 					b = actors[b];
@@ -347,7 +345,7 @@
 					//"create" message
 					if (s.isnew){
 						s.actorB.navel = i;
-						s.actorA.distances.push(s.actorB.width/2);
+						s.actorB.distances[s.actorB.index] = (s.actorB.width/2);
 					}
 					if (s.isSelf()) {
 						a = s.actorA.index;
