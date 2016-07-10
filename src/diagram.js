@@ -49,7 +49,8 @@
 		this.title = title;
 	};
 
-	Diagram.prototype.addSignal = function(signal) {
+	Diagram.prototype.addSignal = function(signal, bflush) {
+		signal.flush = bflush;
 		this.signals.push( signal );
 	};
 
@@ -71,6 +72,7 @@
 		this.arrowtype  = (signaltype >> 2) & 3;
 		this.message    = message;
 		this.isnew      = isnew;
+		this.flush      = false;
 	};
 
 	Diagram.Signal.prototype.isSelf = function() {

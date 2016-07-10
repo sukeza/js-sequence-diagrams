@@ -18,6 +18,7 @@
 \#[^\r\n]*        /* skip comments */
 "participant"     return 'participant';
 "@"               return 'participant';
+"|"               return 'flush';
 "left of"         return 'left_of';
 "right of"        return 'right_of';
 "over"            return 'over';
@@ -61,9 +62,11 @@ line
 
 statement
 	: 'participant' actor_alias { $2; }
-	| frame_statement      { yy.parser.yy.addSignal($1); }
-	| signal               { yy.parser.yy.addSignal($1); }
-	| note_statement       { yy.parser.yy.addSignal($1); }
+	| frame_statement      { yy.parser.yy.addSignal($1, false); }
+	| signal               { yy.parser.yy.addSignal($1, false); }
+	| flush signal         { yy.parser.yy.addSignal($2, true); }
+	| note_statement       { yy.parser.yy.addSignal($1, false); }
+	| flush note_statement { yy.parser.yy.addSignal($2, true); }
 	| 'title' message      { yy.parser.yy.setTitle($2);  }
 	;
 

@@ -334,6 +334,7 @@
 				}
 			}
 
+			var lastHeight = 0;
 			_.each(signals, function(s, i) {
 				var a, b; // Indexes of the left and right actors involved
 
@@ -420,7 +421,9 @@
 				}
 
 				actor_ensure_distance(a, b, s.width + extra_width);
-				self._signals_height += s.isnew ? self._actors_height:s.height;
+				var tmpHeight = s.isnew ? self._actors_height:s.height;
+				self._signals_height += s.flush ? (tmpHeight > lastHeight ? tmpHeight - lastHeight:0):tmpHeight;
+				lastHeight = tmpHeight;
 			});
 
 			// Re-jig the positions
@@ -495,7 +498,12 @@
 		draw_signals : function (offsetY) {
 			var y = offsetY;
 			var self = this;
+			var lastY = y;
 			_.each(this.diagram.signals, function(s) {
+				var orgY = y;
+				if (s.flush){
+					y = lastY;
+				}
 				if (s.type == "Signal") {
 					if (s.isSelf()) {
 						self.draw_self_signal(s, y);
@@ -508,8 +516,9 @@
 				} else if (s.type == "Frame") {
 					self.draw_frame(s, y);
 				}
-
+				lastY = y;
 				y += s.isnew ? self._actors_height:s.height;
+				y = y < orgY ? orgY:y;
 			});
 		},
 
