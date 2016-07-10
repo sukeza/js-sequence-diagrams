@@ -282,16 +282,24 @@
 						}
 						s.margin_left = a.layercount * ACTOR_PADDING;
 						s.padding_right = a.layercount * ACTOR_PADDING;
+						s.bottom = i;
 						c.push(i);
+					} else if (s.frametype == "snip"){
+						//separator
+						var x = c[c.length - 1];
+						s.top = x;
+						s.prev = signals[x].bottom;
+						//temporarily set bottom
+						signals[x].bottom = i;
 					} else if (s.frametype == "bottom"){
 						//lower
-						var x = c.pop();
-						signals[x].actor[0].layercount--;
-						signals[x].actor[1].layercount--;
-						signals[x].bottom = i;
-						s.top = x;
+						var xx = c.pop();
 						//temporary measure
-						s.prev = x;
+						s.prev = signals[xx].bottom;
+						signals[xx].actor[0].layercount--;
+						signals[xx].actor[1].layercount--;
+						signals[xx].bottom = i;
+						s.top = xx;
 					}
 				}
 			});
@@ -367,16 +375,14 @@
 						// Over multiple actors
 						a = Math.min(s.actor[0].index, s.actor[1].index);
 						b = Math.max(s.actor[0].index, s.actor[1].index);
-						s.height -= NOTE_MARGIN;
 					} else {
 						// bottom height
-						s.height = bb.height / 2;
+						s.height -= ACTOR_PADDING + ACTOR_MARGIN;
 						// Over single actor
 						var edgeactors = signals[s.top].actor;
 						a = Math.min(edgeactors[0].index, edgeactors[1].index);
 						b = Math.max(edgeactors[0].index, edgeactors[1].index);
 					}
-					self._signals_height += s.height;
 					// We don't need our padding, and we want to overlap
 					extra_width = - (NOTE_PADDING * 2 + NOTE_OVERLAP * 2);
 				
@@ -543,7 +549,8 @@
 			var bX = getCenterX( signal.actorB );
 			if (signal.isnew){
 				//draw created actor here
-				this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - this._actors_height);
+				//this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - this._actors_height);
+				this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - (offsetY - signal.actorA.y));
 				bX = signal.actorB.x + ACTOR_MARGIN;
 			}
 
@@ -573,26 +580,42 @@
 				frame.y = offsetY;
 				return;
 			}
+			var x,y;
 			var top = this.diagram.signals[frame.top];
-			var y = top.y + ACTOR_PADDING + ACTOR_MARGIN;
 			var actor_l = top.actor[0];
 			var actor_r = top.actor[1];
 			var padding_l = actor_l.maxlayer_l * ACTOR_PADDING;
-			var x = actor_l.x - padding_l + frame.margin_left;
-			var w = actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
-			var h = offsetY - y;
-			
-			var rect = this.draw_rect(x, y, w, h);
-			rect.attr(LINE);
-			this.draw_text(x, y, top.message ,this._font);
-			
 			var prev = this.diagram.signals[frame.prev];
+			if (frame.frametype == "snip"){
+				//separator
+				var x1 = actor_l.x - padding_l + frame.margin_left;
+				var x2 = x1 + actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
+				var line = this.draw_line(x1, offsetY, x2, offsetY);
+				line.attr(LINE);
+				line.attr({
+					'stroke-dasharray': this.line_types[LINETYPE.DOTTED]
+				});
+				frame.y = offsetY;
+				y = prev.y + ACTOR_PADDING;
+				//add space only on top
+				y += prev == top? ACTOR_PADDING * 2:0;
+			} else {
+				//bottom
+				y = top.y + ACTOR_PADDING + ACTOR_MARGIN;
+				x = actor_l.x - padding_l + frame.margin_left;
+				var w = actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
+				var h = offsetY - y;
+
+				var rect = this.draw_rect(x, y, w, h);
+				rect.attr(LINE);
+				this.draw_text(x, y, top.message ,this._font);
+				y = prev.y + ACTOR_PADDING;
+			}
 			var aX = getCenterX( actor_l );
 			var bX = getCenterX( actor_r );
 
 			// Mid point between actors
 			x = (bX - aX) / 2 + aX;
-			y = prev.y + ACTOR_PADDING * 3;
 			this.draw_text(x, y, frame.message, this._font); 
 		},
 

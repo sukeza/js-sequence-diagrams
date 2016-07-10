@@ -23,6 +23,7 @@
 "over"            return 'over';
 "note"            return 'note';
 "frame"           return 'frame';
+"snip"            return 'snip';
 "bottom"          return 'bottom';
 "title"           return 'title';
 "["               return 'create';
@@ -68,6 +69,7 @@ statement
 
 frame_statement
 	: 'frame' 'over' actor_pair message { $$ = new Diagram.Frame($3, "top", $4); }
+	| 'frame' 'snip' message { $$ = new Diagram.Frame([null,null], "snip", $3); }
 	| 'frame' 'bottom' message { $$ = new Diagram.Frame([null,null], "bottom", $3); }
 	;
 
