@@ -5,6 +5,10 @@ JS Sequence Diagrams [![Build Status](https://travis-ci.org/bramp/js-sequence-di
 
 by [Andrew Brampton](http://bramp.net) 2012-2015
 
+added feature
+<https://sukeza.github.io/js-sequence-diagrams/>
+
+by sukeza
 
 Example
 -------
@@ -17,6 +21,40 @@ We turn
 into
 
 ![Sample generated UML diagram](http://bramp.github.io/js-sequence-diagrams/images/sample.svg)
+
+and
+
+    @Home as H
+    @Desk as D
+    @Dir as P
+    @Boss as B
+    @Cafe as C
+    H->H:breakfast
+    H->D:bike
+    |C->C:open
+    D->[P:mkdir
+    B-->>P:copy ticket
+    |D->H:forget money
+    Note left of B:lengthy\nprocess
+    |H->D:have money
+    D->>C:routine
+    C->>C:cup
+    C->D:coffee
+    frame over D,C:Alt
+    C->D:cookies
+    frame snip:option1
+    C->D:cakes
+    frame snip:option2
+    D->B:ask for money
+    C->D:sandwiches
+    frame bottom:option3
+    P->D:copied
+    |Note right of P:beep alert
+    D->H:tired
+
+into
+
+![another sample](https://sukeza.github.io/images/sample_sequence.svg)
 
 Requirements
 ------------
