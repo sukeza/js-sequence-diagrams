@@ -625,7 +625,8 @@
 
 			// Mid point between actors
 			x = (bX - aX) / 2 + aX;
-			this.draw_text(x, y, frame.message, this._font); 
+			var tmpY = top == prev ? y + ACTOR_PADDING * 2:0;
+			this.draw_text(x, tmpY, frame.message, this._font); 
 		},
 
 		draw_note : function (note, offsetY) {
