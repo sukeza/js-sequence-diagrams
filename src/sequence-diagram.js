@@ -625,7 +625,7 @@
 
 			// Mid point between actors
 			x = (bX - aX) / 2 + aX;
-			var tmpY = top == prev ? y + ACTOR_PADDING * 2:0;
+			var tmpY = y + (top == prev && frame.frametype == "bottom" ? ACTOR_PADDING * 2:0);
 			this.draw_text(x, tmpY, frame.message, this._font); 
 		},
 
