@@ -595,10 +595,12 @@
 			var actor_r = top.actor[1];
 			var padding_l = actor_l.maxlayer_l * ACTOR_PADDING;
 			var prev = this.diagram.signals[frame.prev];
+			var aX = getCenterX( actor_l );
+			var bX = getCenterX( actor_r );
 			if (frame.frametype == "snip"){
 				//separator
-				var x1 = actor_l.x - padding_l + frame.margin_left;
-				var x2 = x1 + actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
+				var x1 = aX - padding_l - frame.margin_left - ACTOR_PADDING;
+				var x2 = x1 + (bX - aX) - frame.margin_left + frame.padding_right + padding_l + ACTOR_PADDING * 3;
 				var line = this.draw_line(x1, offsetY, x2, offsetY);
 				line.attr(LINE);
 				line.attr({
@@ -611,8 +613,8 @@
 			} else {
 				//bottom
 				y = top.y + ACTOR_PADDING + ACTOR_MARGIN;
-				x = actor_l.x - padding_l + frame.margin_left;
-				var w = actor_r.width + (actor_r.x - actor_l.x) + frame.margin_left + frame.padding_right + padding_l;
+				x = aX - padding_l - frame.margin_left - ACTOR_PADDING;
+				var w = (bX - aX) - frame.margin_left + frame.padding_right + padding_l + ACTOR_PADDING * 3;
 				var h = offsetY - y;
 
 				var rect = this.draw_rect(x, y, w, h);
@@ -620,8 +622,6 @@
 				this.draw_text(x, y, top.message ,this._font);
 				y = prev.y + ACTOR_PADDING;
 			}
-			var aX = getCenterX( actor_l );
-			var bX = getCenterX( actor_r );
 
 			// Mid point between actors
 			x = (bX - aX) / 2 + aX;
