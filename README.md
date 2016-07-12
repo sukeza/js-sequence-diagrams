@@ -6,7 +6,7 @@ JS Sequence Diagrams [![Build Status](https://travis-ci.org/bramp/js-sequence-di
 by [Andrew Brampton](http://bramp.net) 2012-2015
 
 added feature
-<https://sukeza.github.io/js-sequence-diagrams/>
+<https://sukeza.github.io/sequence-diagram/>
 
 by sukeza
 
