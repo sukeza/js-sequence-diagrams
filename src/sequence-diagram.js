@@ -296,10 +296,13 @@
 						var xx = c.pop();
 						//temporary measure
 						s.prev = signals[xx].bottom;
-						signals[xx].actor[0].layercount--;
-						signals[xx].actor[1].layercount--;
-						signals[xx].bottom = i;
+						var f = signals[xx];
+						f.actor[0].layercount--;
+						f.actor[1].layercount--;
+						f.bottom = i;
 						s.top = xx;
+						s.margin_left = f.actor[0].layercount * ACTOR_PADDING * 2;
+						s.padding_right = f.actor[1].layercount * ACTOR_PADDING * 2;
 					}
 				}
 			});
@@ -594,16 +597,19 @@
 			var actor_l = top.actor[0];
 			var actor_r = top.actor[1];
 			var padding_l = actor_l.maxlayer_l * ACTOR_PADDING;
+			var padding_r = actor_r.maxlayer_r * ACTOR_PADDING;
 			var prev = this.diagram.signals[frame.prev];
 			var aX = getCenterX( actor_l );
 			var bX = getCenterX( actor_r );
 			if (frame.frametype == "snip"){
 				//separator
 				var x1 = aX - padding_l - frame.margin_left - ACTOR_PADDING;
-				var x2 = x1 + (bX - aX) - frame.margin_left + frame.padding_right + padding_l + ACTOR_PADDING * 3;
+				var x2 = x1 + (bX - aX) - frame.margin_left - frame.padding_right + padding_l + padding_r + ACTOR_PADDING * 4;
 				var line = this.draw_line(x1, offsetY, x2, offsetY);
 				line.attr(LINE);
 				line.attr({
+					'stroke-width':0.5,
+					'stroke':"555555",
 					'stroke-dasharray': this.line_types[LINETYPE.DOTTED]
 				});
 				frame.y = offsetY;
@@ -613,12 +619,16 @@
 			} else {
 				//bottom
 				y = top.y + ACTOR_PADDING + ACTOR_MARGIN;
-				x = aX - padding_l - frame.margin_left - ACTOR_PADDING;
-				var w = (bX - aX) - frame.margin_left + frame.padding_right + padding_l + ACTOR_PADDING * 3;
+				x = aX - padding_l + frame.margin_left - ACTOR_PADDING;
+				var w = (bX - aX) - frame.margin_left - frame.padding_right + padding_l + padding_r + ACTOR_PADDING * 4;
 				var h = offsetY - y;
 
 				var rect = this.draw_rect(x, y, w, h);
 				rect.attr(LINE);
+				rect.attr({
+					'stroke-width':0.5,
+					'stroke':"555555"
+				});
 				this.draw_text(x, y, top.message ,this._font);
 				y = prev.y + ACTOR_PADDING;
 			}
