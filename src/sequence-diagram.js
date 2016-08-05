@@ -198,6 +198,7 @@
 			var l = this.line_types = {};
 			l[LINETYPE.SOLID]  = '';
 			l[LINETYPE.DOTTED] = '-';
+			l[LINETYPE.DASHED] = '- ';
 		},
 
 		init_paper : function(container) {
@@ -612,7 +613,7 @@
 				line.attr({
 					'stroke-width':0.5,
 					'stroke':"555555",
-					'stroke-dasharray': this.line_types[LINETYPE.DOTTED]
+					'stroke-dasharray': this.line_types[LINETYPE.DASHED]
 				});
 				frame.y = offsetY;
 				y = prev.y + ACTOR_PADDING;
