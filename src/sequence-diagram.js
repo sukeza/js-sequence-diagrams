@@ -510,6 +510,7 @@
 				if (s.type == "Signal") {
 					if (s.isSelf()) {
 						self.draw_self_signal(s, y);
+						y += ACTOR_PADDING / 2;
 					} else {
 						self.draw_signal(s, y);
 					}
@@ -603,8 +604,9 @@
 			var bX = getCenterX( actor_r );
 			if (frame.frametype == "snip"){
 				//separator
-				var x1 = aX - padding_l - frame.margin_left - ACTOR_PADDING;
-				var x2 = x1 + (bX - aX) - frame.margin_left - frame.padding_right + padding_l + padding_r + ACTOR_PADDING * 4;
+				var bottom = this.diagram.signals[top.bottom];
+				var x1 = aX - padding_l + bottom.margin_left - ACTOR_PADDING;
+				var x2 = x1 + (bX - aX) - bottom.margin_left - bottom.padding_right + padding_l + padding_r + ACTOR_PADDING * 4;
 				var line = this.draw_line(x1, offsetY, x2, offsetY);
 				line.attr(LINE);
 				line.attr({
