@@ -429,6 +429,7 @@
 				self._signals_height += s.flush ? (tmpHeight > lastHeight ? tmpHeight - lastHeight:0):tmpHeight;
 				lastHeight = tmpHeight;
 			});
+			self._signals_height += SIGNAL_MARGIN; 
 
 			// Re-jig the positions
 			var actors_x = 0;
@@ -479,9 +480,10 @@
 				// Top box
 				self.draw_actor(a, y, self._actors_height, self._signals_height);
 
-				//removed bottom box
 				// Bottom box
-				//self.draw_actor(a, y + self._actors_height + self._signals_height, self._actors_height);
+				a.y = y + self._actors_height + self._signals_height;
+				a.height = self._actors_height;
+				self.draw_text_box(a, a.name, ACTOR_MARGIN, ACTOR_PADDING, self._font);
 				//moved drawing Vertical line
 			});
 		},
@@ -563,9 +565,14 @@
 			var bX = getCenterX( signal.actorB );
 			if (signal.isnew){
 				//draw created actor here
-				//this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - this._actors_height);
-				this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - (offsetY - signal.actorA.y));
+				var title_height = this._title ? this._title.height : 0;
+				this.draw_actor(signal.actorB, offsetY, this._actors_height, this._signals_height - offsetY + 
+					DIAGRAM_MARGIN + title_height);
 				bX = signal.actorB.x + ACTOR_MARGIN;
+				// Bottom box
+				signal.actorB.y = this._actors_height + this._signals_height + DIAGRAM_MARGIN + title_height;
+				signal.actorB.height = this._actors_height;
+				this.draw_text_box(signal.actorB, signal.actorB.name, ACTOR_MARGIN, ACTOR_PADDING, this._font);
 			}
 
 			// Mid point between actors
@@ -598,8 +605,8 @@
 			var top = this.diagram.signals[frame.top];
 			var actor_l = top.actor[0];
 			var actor_r = top.actor[1];
-			var padding_l = actor_l.maxlayer_l * ACTOR_PADDING;
-			var padding_r = actor_r.maxlayer_r * ACTOR_PADDING;
+			var padding_l = (actor_l.maxlayer_l + 1) * ACTOR_PADDING;
+			var padding_r = (actor_r.maxlayer_r + 1) * ACTOR_PADDING;
 			var prev = this.diagram.signals[frame.prev];
 			var aX = getCenterX( actor_l );
 			var bX = getCenterX( actor_r );
